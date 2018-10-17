@@ -1,1 +1,0 @@
-# shu-book-rental-owners
