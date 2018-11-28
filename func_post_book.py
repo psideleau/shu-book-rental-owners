@@ -1,14 +1,11 @@
 import json
+from Crypto.PublicKey import RSA
+from Crypto import Random
+
 # creating the json object that will serve the information to the webpage
 
-# function to post book
 
-
-def post_book(book_rental_info):
-    # By default owner status and rental status are set at time of book posting
-    owner_status = "active"
-    rental_status = "checked in"
-    # Gets user input for book posting and converts to json string
+def post_book(book_rental_info, is_rented, is_active, rental_id_value):
     x = {
         "isbn": str(book_rental_info.isbn),
         "book author": str(book_rental_info.author),
@@ -18,46 +15,38 @@ def post_book(book_rental_info):
         "rental value": str(book_rental_info.rental_value),
         "start date": str(book_rental_info.start_date),
         "end date": str(book_rental_info.end_date),
-        "owner status": str(owner_status),
-        "rental status": str(rental_status)
+        "is rented": str(is_rented),
+        "is active": str(is_active),
     }
     # convert into JSON:
 
-    book_post = json.dumps(x)
-    # result is a JSON string
-    # creates book file or appends book file if it exists with the posting information
+    y = book_rental_info.owner_id + "_" + rental_id_value + " " + json.dumps(x)
+    f = open('main.json', 'a')
+    f.write(y + '\n')
 
-    try:
-        file = open('books.txt', 'r')
-        file_exists = str('yes')
-        file.close()
-    except FileNotFoundError:
-        file_exists = str('no')
+def encrypt_file():
+    #generate public/ private keys
+    random_generator = Random.new().read
+    key = RSA.generate(2048, random_generator)
+    public_key = key.publickey()
 
-    if file_exists == 'no':
-        file = open("books.txt", "w+")
-        file.close()
+    #encrypt input string from user
+    encrypt_file = public_key.encrypt("main.json", 32)
 
-    file = open("books.txt", "a")
-    file.write("\n" + book_post)
-    file.close()
-    file = open("books.txt", "r")
-    book_contents = file.read()
-    # print(book_contents)
-    # print(book_post)
-    return book_contents
+    #save text file containing book information to an encrypted text file
 
-# put book file into list format for searching and to updated with rented book
+    enc_file = open("main.json", "w")
+    enc_file.write(str(encrypt_file))
+    enc_file.close()
+    return enc_file
 
-# function for getting the rental ID. This will be replaced with an API call
-# to the student renters group
-
-
-def input_rental_id():
-    rental_id = input("Enter rental ID: ")
-    return rental_id
-
-
-
-
+def decrypt_file(enc_file):
+    decrypt=''
+    
+    dec_file = key.decrypt(encrypt_file)
+    decrypted_file = open("main.json", "w")
+    decrypted_file.write(str(dec_file))
+    decrypted_file.close()
+    decrypted_file = open("output.txt", "r")
+    return decrypted_file
 
